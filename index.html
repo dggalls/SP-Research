@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Mapbox Example</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.js'></script>
+    <script src="bower_components/chartist/dist/chartist.min.js"></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="bower_components/chartist/dist/chartist.min.css">
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
+    <link href='./styles/styles.css' rel='stylesheet' />
+</head>
+
+<body>
+
+<div id='map'></div>
+
+<div class='map-overlay' id='features'>
+    <div class="ct-chart ct-square" id="chart-2a"></div>
+</div>
+
+<div class='map-overlay' id='legend'>
+    <div id="menu">
+        <input type="radio" name="radValue" value="cjndbqgaf7ngz2soeasph8rnr" id="cjndbqgaf7ngz2soeasph8rnr" checked>
+        <label for='cjndbqgaf7ngz2soeasph8rnr'>American States</label>
+        <br>
+        <input type="radio" name="radValue" value="cjndcs63k7otr2sp42lcd9o9w" id="cjndcs63k7otr2sp42lcd9o9w">
+        <label for='cjndcs63k7otr2sp42lcd9o9w'>Irish Counties</label>
+    </div>
+</div>
+
+<script>
+    //Mapbox Access Token
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZGdnYWxscyIsImEiOiJjam5kODhhODY1d2g5M3huMTN5ZTluOGRhIn0.T10MzeopQu-_6mXyp_zq_A';
+
+    //Coordinates for flyTo method which takes you to a location (triggered when layering is changed)
+    const amCoords = [-8.268010340029832, 53.49660773012667];
+    const ireCoords = [-95.2592148290787, 37.073134532564225];
+
+    //Initialise Map
+    var map = new mapboxgl.Map({
+        container: 'map', // container id
+        style: 'mapbox://styles/dggalls/cjndbqgaf7ngz2soeasph8rnr',
+        center: [-74.50, 40], // starting position
+        zoom: 4.1141377379312125 // starting zoom
+    });
+
+    //Functiionality for switching layer style
+    var layerList = document.getElementById('menu');
+    var inputs = layerList.getElementsByTagName('input');
+
+    function switchLayer(layer) {
+        var layerId = layer.target.id;
+        var location = map.getStyle().name;
+
+        if(location === 'americastates') {
+            map.flyTo({
+                center: amCoords,
+                zoom: 6.6
+            });
+        } else {
+            map.flyTo({
+                center: ireCoords,
+                zoom: 4.1
+            });
+        }
+        map.setStyle('mapbox://styles/dggalls/' + layerId);
+    }
+
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].onclick = switchLayer;
+    }
+
+    //Functionality for when a user clicks on a registered location
+    map.on('click', function(e) {
+
+        var features = map.queryRenderedFeatures(e.point, {
+            layers: [map.getStyle().name]
+        });
+
+        if (!features.length) {
+            return;
+        }
+
+        var feature = features[0];
+
+        //Popup function
+        var popup = new mapboxgl.Popup({ offset: [0, -15] })
+            .setLngLat(e.lngLat)
+            .setHTML('<img src="img/Mastercard.png" style="width=140px; height:50px; margin:auto;"><br>' +
+                '<h3>Location: '
+                + feature.properties.NAME +
+                '</h3><br>').addTo(map);
+
+
+        //RNG for charts, apologies for the hacky way i'm spoofing the data!
+        var arr = [[] , [] , []];
+        for (var i=0, t=12; i<t; i++) {
+            arr[0].push(Math.round(Math.random() * t));
+            arr[1].push(Math.round(Math.random() * t));
+            arr[2].push(Math.round(Math.random() * t));
+        }
+
+        var chart = new Chartist.Line('.ct-chart', {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            series: [arr[0],
+            arr[1],
+            arr[2]],
+        }, {
+            low: 0,
+            showArea: true,
+            showGrid: false,
+            showPoint: false,
+            width: '480px',
+            height: '250px'
+        });
+
+        chart.on('draw', function(data) {
+            if(data.type === 'line' || data.type === 'area') {
+                data.element.animate({
+                    d: {
+                        begin: 800 * data.index, //Length between each animation
+                        dur: 600, //Length of each animation
+                        from: data.path.clone().scale(1, 0).translate(0, data.chartRect.height()).stringify(),
+                        to: data.path.clone().stringify(),
+                        easing: Chartist.Svg.Easing.easeOutQuint
+                    }
+                });
+            }
+        });
+    });
+
+
+</script>
+
+</body>
+</html>

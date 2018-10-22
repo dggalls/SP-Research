@@ -11,6 +11,7 @@
 
     <script src='https://api.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <link href='./styles/styles.css' rel='stylesheet' />
 </head>
 
@@ -47,6 +48,7 @@
         center: [-74.50, 40], // starting position
         zoom: 4.1141377379312125 // starting zoom
     });
+
 
     //Functiionality for switching layer style
     var layerList = document.getElementById('menu');
@@ -117,6 +119,42 @@
             width: '480px',
             height: '250px'
         });
+
+
+        var mapData = new Map();
+
+        //Read CSV
+        $(document).ready(function() {
+            $.ajax({
+                type: "GET",
+                url: "./AMStates.csv",
+                dataType: "text",
+                success: function(data) {processData(data);}
+            });
+        });
+
+        function processData(allText) {
+            var allTextLines = allText.split(/\r\n|\n/);
+            var headers = allTextLines[0].split(',');
+            var lines = [];
+            var lines2 = new Map();
+
+            for (var i=1; i<allTextLines.length; i++) {
+                var data = allTextLines[i].split(',');
+                if (data.length == headers.length) {
+
+                    // var tarr = [];
+                    for (var j=0; j<headers.length; j++) {
+                        mapData.set(headers[j],data[j]);
+                        // tarr.push(headers[j]+":"+data[j]);
+                    }
+                    lines.push(mapData);
+                    lines2.set(mapData.get('State'), mapData)
+                }
+            }
+            // console.log(lines);
+            // console.log(lines2);
+        }
 
         chart.on('draw', function(data) {
             if(data.type === 'line' || data.type === 'area') {

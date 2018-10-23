@@ -8,7 +8,7 @@ function loadLayer() {
 
         map.addLayer({
             "id": "states-join",
-            "type": "fill",
+            "type": "background",
             "source": "AmericaStates",
             "source-layer": "AmericaStates",
             "paint": {
@@ -19,19 +19,20 @@ function loadLayer() {
 }
 
 
-function assignVectorColours(dataArray) {
+function assignVectorColours(dataArray, expressionArray) {
+
     var maxValue = 130000;
 
     // Calculate color for each state based on the unemployment rate
     dataArray.forEach(function(row) {
         var green = (row["Amount"] / maxValue) * 255;
         var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
-        expression.push(row["STATE"], color);
+        expressionArray.push(row["STATE"], color);
     });
 
 
     // Last value is the default, used where there is no data
-    expression.push("rgba(0,0,0,0)");
+    expressionArray.push("rgba(0,0,0,0)");
 }
 
 

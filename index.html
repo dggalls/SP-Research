@@ -27,11 +27,21 @@
 
 <div class='map-overlay' id='legend'>
     <div id="menu">
-        <input type="radio" name="radValue" value="cjndbqgaf7ngz2soeasph8rnr" id="cjndbqgaf7ngz2soeasph8rnr" checked>
-        <label for='cjndbqgaf7ngz2soeasph8rnr'>Year 1 Total Spending</label>
+        <input type="radio" name="yearValue" value="1" id="Y1" checked>
+        <label for='Y1'>Year 1 Total Spending</label>
         <br>
-        <input type="radio" name="radValue" value="cjndcs63k7otr2sp42lcd9o9w" id="cjndcs63k7otr2sp42lcd9o9w">
-        <label for='cjndcs63k7otr2sp42lcd9o9w'>Year 2 Total Spending</label>
+        <input type="radio" name="yearValue" value="2" id="Y2">
+        <label for='Y2'>Year 2 Total Spending</label>
+        <br>
+        <input type="radio" name="yearValue" value="3" id="Y3">
+        <label for='Y3'>Year 3 Total Spending</label>
+        <br>
+        <input type="radio" name="yearValue" value="4" id="Y4">
+        <label for='Y4'>Year 4 Total Spending</label>
+        <br>
+        <input type="radio" name="yearValue" value="5" id="Y5">
+        <label for='Y5'>Year 5 Total Spending</label>
+
     </div>
 </div>
 
@@ -54,6 +64,7 @@
     var expression = ["match", ["get", "STATE"]];
     var initialData = [];
     var csvData;
+    var datasetPosition = 1;
 
     //Read CSV
     $(document).ready(function() {
@@ -63,7 +74,7 @@
             dataType: "text",
             success: function(data) {
                 getCSVFloatColumnData('Y1', data, initialData);
-                assignVectorColours(initialData);
+                assignVectorColours(initialData, expression);
                 loadLayer();
                 csvData = data;
             }
@@ -74,27 +85,23 @@
     var layerList = document.getElementById('menu');
     var inputs = layerList.getElementsByTagName('input');
 
-    function switchLayer(layer) {
-        var layerId = layer.target.id;
-        var location = map.getStyle().name;
+    function switchLayer(input) {
 
-        if(location === 'americastates') {
-            map.flyTo({
-                center: amCoords,
-                zoom: 6.6
-            });
-        } else {
-            map.flyTo({
-                center: ireCoords,
-                zoom: 4.1
-            });
-        }
-        map.setStyle('mapbox://styles/dggalls/' + layerId);
+        var data = [];
+        var expression = ["match", ["get", "STATE"]];
+
+        getCSVFloatColumnData(input.target.id, csvData, data);
+        assignVectorColours(data, expression);
+
+        map.setPaintProperty('states-join', 'fill-color', expression);
+        datasetPosition = input.target.value;
     }
 
     for (var i = 0; i < inputs.length; i++) {
         inputs[i].onclick = switchLayer;
     }
+
+
 
     var tempData2 = [];
 
@@ -122,15 +129,16 @@
 
         getChartData(chartColumns, csvData, tempData2, feature.properties.STATE);
 
-        console.log(tempData2);
-
         //Popup function
         var popup = new mapboxgl.Popup({ offset: [0, -15] })
             .setLngLat(e.lngLat)
+
             .setHTML('<img src="img/Mastercard.png" style="width=140px; height:50px; margin:auto;"><br>' +
-                '<h3>Location: '
-                + feature.properties.NAME +
-                '</h3><br>').addTo(map);
+                '<table>' +
+                '<tr><th><h3>Location</h3></th>' +
+                '<th><h3>Value</h3></th></tr>' +
+                '<tr><td><h3>' + feature.properties.NAME + '</h3></td>' +
+                '<td><h3>$' + tempData2[datasetPosition-1] + '</h3></td></tr></table>').addTo(map);
 
 
         generateChart(chartColumns, tempData2)

@@ -12,6 +12,8 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="./scripts/mapScripts.js"></script>
+    <script src="./scripts/chartScripts.js"></script>
     <link href='./styles/styles.css' rel='stylesheet' />
 </head>
 
@@ -26,10 +28,10 @@
 <div class='map-overlay' id='legend'>
     <div id="menu">
         <input type="radio" name="radValue" value="cjndbqgaf7ngz2soeasph8rnr" id="cjndbqgaf7ngz2soeasph8rnr" checked>
-        <label for='cjndbqgaf7ngz2soeasph8rnr'>American States</label>
+        <label for='cjndbqgaf7ngz2soeasph8rnr'>Year 1 Total Spending</label>
         <br>
         <input type="radio" name="radValue" value="cjndcs63k7otr2sp42lcd9o9w" id="cjndcs63k7otr2sp42lcd9o9w">
-        <label for='cjndcs63k7otr2sp42lcd9o9w'>Irish Counties</label>
+        <label for='cjndcs63k7otr2sp42lcd9o9w'>Year 2 Total Spending</label>
     </div>
 </div>
 
@@ -39,7 +41,6 @@
 
     //Coordinates for flyTo method which takes you to a location (triggered when layering is changed)
     const amCoords = [-8.268010340029832, 53.49660773012667];
-    const ireCoords = [-95.2592148290787, 37.073134532564225];
 
     //Initialise Map
     var map = new mapboxgl.Map({
@@ -51,7 +52,8 @@
 
 
     var expression = ["match", ["get", "STATE"]];
-    var tempArray = [];
+    var initialData = [];
+    var csvData;
 
     //Read CSV
     $(document).ready(function() {
@@ -60,55 +62,13 @@
             url: "./AMStates.csv",
             dataType: "text",
             success: function(data) {
-                processData(data);
-                assignVectorColours(tempArray);
+                getCSVFloatColumnData('Y1', data, initialData);
+                assignVectorColours(initialData);
                 loadLayer();
+                csvData = data;
             }
         });
     });
-
-    function processData(allText) {
-        var allTextLines = allText.split(/\r\n|\n/);
-        var headers = allTextLines[0].split(',');
-        var tempData = new Map();
-
-        for (var i=1; i<allTextLines.length; i++) {
-            var data = allTextLines[i].split(',');
-            if (data.length == headers.length) {
-
-                for (var j=0; j<headers.length; j++) {
-                    tempData.set(headers[j],data[j]);
-                }
-
-                 tempArray.push({"STATE": tempData.get("State"), "Amount": parseFloat(tempData.get("scaled_amt_d"))})
-            }
-        }
-    }
-
-
-    function assignVectorColours(dataArray) {
-        var maxValue = 130000;
-
-        // Calculate color for each state based on the unemployment rate
-        dataArray.forEach(function(row) {
-            var green = (row["Amount"] / maxValue) * 255;
-            var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
-            expression.push(row["STATE"], color);
-        });
-
-
-        // Last value is the default, used where there is no data
-        expression.push("rgba(0,0,0,0)");
-    }
-
-
-
-
-
-
-
-
-
 
     //Functiionality for switching layer style
     var layerList = document.getElementById('menu');
@@ -136,34 +96,8 @@
         inputs[i].onclick = switchLayer;
     }
 
+    var tempData2 = [];
 
-
-
-
-
-
-
-
-
-    function loadLayer() {
-        map.on('load', function() {
-
-            map.addSource("AmericaStates", {
-                type: "vector",
-                url: "mapbox://dggalls.cjnd92u7e02is2voioguvw5cr-05azb"
-            });
-
-            map.addLayer({
-                "id": "states-join",
-                "type": "fill",
-                "source": "AmericaStates",
-                "source-layer": "AmericaStates",
-                "paint": {
-                    "fill-color": expression
-                }
-            });
-        });
-    }
 
 
 
@@ -180,6 +114,16 @@
 
         var feature = features[0];
 
+        csvColumnData = [];
+        tempData2 = [];
+
+        var chartColumns = ['Y1', 'Y2', 'Y3', 'Y4', 'Y5'];
+        var chartIndexes = ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'];
+
+        getChartData(chartColumns, csvData, tempData2, feature.properties.STATE);
+
+        console.log(tempData2);
+
         //Popup function
         var popup = new mapboxgl.Popup({ offset: [0, -15] })
             .setLngLat(e.lngLat)
@@ -189,37 +133,9 @@
                 '</h3><br>').addTo(map);
 
 
+        generateChart(chartColumns, tempData2)
 
 
-
-
-
-
-        var chart = new Chartist.Line('.ct-chart', {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            series: ''
-        }, {
-            low: 0,
-            showArea: true,
-            showGrid: false,
-            showPoint: false,
-            width: '480px',
-            height: '250px'
-        });
-
-        chart.on('draw', function(data) {
-            if(data.type === 'line' || data.type === 'area') {
-                data.element.animate({
-                    d: {
-                        begin: 800 * data.index, //Length between each animation
-                        dur: 600, //Length of each animation
-                        from: data.path.clone().scale(1, 0).translate(0, data.chartRect.height()).stringify(),
-                        to: data.path.clone().stringify(),
-                        easing: Chartist.Svg.Easing.easeOutQuint
-                    }
-                });
-            }
-        });
     });
 
 

@@ -44,10 +44,70 @@
     //Initialise Map
     var map = new mapboxgl.Map({
         container: 'map', // container id
-        style: 'mapbox://styles/dggalls/cjndbqgaf7ngz2soeasph8rnr',
+        style: 'mapbox://styles/dggalls/cjnekqlzr1x622rnu4kpc6ml2',
         center: [-74.50, 40], // starting position
         zoom: 4.1141377379312125 // starting zoom
     });
+
+
+    var expression = ["match", ["get", "STATE"]];
+    var tempArray = [];
+
+    //Read CSV
+    $(document).ready(function() {
+        $.ajax({
+            type: "GET",
+            url: "./AMStates.csv",
+            dataType: "text",
+            success: function(data) {
+                processData(data);
+                assignVectorColours(tempArray);
+                loadLayer();
+            }
+        });
+    });
+
+    function processData(allText) {
+        var allTextLines = allText.split(/\r\n|\n/);
+        var headers = allTextLines[0].split(',');
+        var tempData = new Map();
+
+        for (var i=1; i<allTextLines.length; i++) {
+            var data = allTextLines[i].split(',');
+            if (data.length == headers.length) {
+
+                for (var j=0; j<headers.length; j++) {
+                    tempData.set(headers[j],data[j]);
+                }
+
+                 tempArray.push({"STATE": tempData.get("State"), "Amount": parseFloat(tempData.get("scaled_amt_d"))})
+            }
+        }
+    }
+
+
+    function assignVectorColours(dataArray) {
+        var maxValue = 130000;
+
+        // Calculate color for each state based on the unemployment rate
+        dataArray.forEach(function(row) {
+            var green = (row["Amount"] / maxValue) * 255;
+            var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
+            expression.push(row["STATE"], color);
+        });
+
+
+        // Last value is the default, used where there is no data
+        expression.push("rgba(0,0,0,0)");
+    }
+
+
+
+
+
+
+
+
 
 
     //Functiionality for switching layer style
@@ -76,11 +136,42 @@
         inputs[i].onclick = switchLayer;
     }
 
+
+
+
+
+
+
+
+
+
+    function loadLayer() {
+        map.on('load', function() {
+
+            map.addSource("AmericaStates", {
+                type: "vector",
+                url: "mapbox://dggalls.cjnd92u7e02is2voioguvw5cr-05azb"
+            });
+
+            map.addLayer({
+                "id": "states-join",
+                "type": "fill",
+                "source": "AmericaStates",
+                "source-layer": "AmericaStates",
+                "paint": {
+                    "fill-color": expression
+                }
+            });
+        });
+    }
+
+
+
     //Functionality for when a user clicks on a registered location
     map.on('click', function(e) {
 
         var features = map.queryRenderedFeatures(e.point, {
-            layers: [map.getStyle().name]
+            layers: ['states-join']
         });
 
         if (!features.length) {
@@ -98,19 +189,15 @@
                 '</h3><br>').addTo(map);
 
 
-        //RNG for charts, apologies for the hacky way i'm spoofing the data!
-        var arr = [[] , [] , []];
-        for (var i=0, t=12; i<t; i++) {
-            arr[0].push(Math.round(Math.random() * t));
-            arr[1].push(Math.round(Math.random() * t));
-            arr[2].push(Math.round(Math.random() * t));
-        }
+
+
+
+
+
 
         var chart = new Chartist.Line('.ct-chart', {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            series: [arr[0],
-            arr[1],
-            arr[2]],
+            series: ''
         }, {
             low: 0,
             showArea: true,
@@ -119,42 +206,6 @@
             width: '480px',
             height: '250px'
         });
-
-
-        var mapData = new Map();
-
-        //Read CSV
-        $(document).ready(function() {
-            $.ajax({
-                type: "GET",
-                url: "./AMStates.csv",
-                dataType: "text",
-                success: function(data) {processData(data);}
-            });
-        });
-
-        function processData(allText) {
-            var allTextLines = allText.split(/\r\n|\n/);
-            var headers = allTextLines[0].split(',');
-            var lines = [];
-            var lines2 = new Map();
-
-            for (var i=1; i<allTextLines.length; i++) {
-                var data = allTextLines[i].split(',');
-                if (data.length == headers.length) {
-
-                    // var tarr = [];
-                    for (var j=0; j<headers.length; j++) {
-                        mapData.set(headers[j],data[j]);
-                        // tarr.push(headers[j]+":"+data[j]);
-                    }
-                    lines.push(mapData);
-                    lines2.set(mapData.get('State'), mapData)
-                }
-            }
-            // console.log(lines);
-            // console.log(lines2);
-        }
 
         chart.on('draw', function(data) {
             if(data.type === 'line' || data.type === 'area') {

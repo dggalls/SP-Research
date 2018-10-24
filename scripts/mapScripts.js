@@ -8,7 +8,7 @@ function loadLayer() {
 
         map.addLayer({
             "id": "states-join",
-            "type": "background",
+            "type": "fill",
             "source": "AmericaStates",
             "source-layer": "AmericaStates",
             "paint": {

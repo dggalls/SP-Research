@@ -38,10 +38,10 @@ function getChartData(columnNames, allText, newData, locationName) {
             for (var j=0; j<headers.length; j++) {
                 tempData.set(headers[j],data[j]);
             }
+
+            console.log(tempData);
+
             if(tempData.get("State") === locationName) {
-                // tempData.forEach(function (arrayItem) {
-                //     console.log(arrayItem);
-                // });
                 for(var k=0; k<columnNames.length; k++) {
                     newData.push(parseFloat(tempData.get(columnNames[k])))
                 }

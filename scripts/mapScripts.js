@@ -1,33 +1,61 @@
 function loadLayer() {
     map.on('load', function() {
 
-        map.addSource("AmericaStates", {
+
+        map.addSource("amZips", {
+            type: "vector",
+            url: "mapbox://dggalls.6gyvbere"
+        });
+
+        map.addLayer({
+            "id": "zip-join",
+            "type": "fill",
+            "source": "amZips",
+            "source-layer": "gz_2010_us_050_00_5m-9au8es",
+            'layout': {
+                'visibility': 'none'
+            },
+            "paint": {
+                "fill-color": expression2,
+                "fill-outline-color": '#000000',
+                'fill-opacity': 0.6
+            }
+        });
+
+        map.addSource("American States", {
             type: "vector",
             url: "mapbox://dggalls.cjnd92u7e02is2voioguvw5cr-05azb"
         });
 
+
         map.addLayer({
             "id": "states-join",
             "type": "fill",
-            "source": "AmericaStates",
+            "source": "American States",
             "source-layer": "AmericaStates",
+            "minZoom": 9,
+            "maxZoom": 10,
+            'layout': {
+                'visibility': 'visible'
+            },
             "paint": {
-                "fill-color": expression
+                "fill-color": expression,
+                'fill-opacity': 0.6
             }
         });
+
     });
 }
 
+function assignVectorColours(dataArray, expressionArray, rowName) {
 
-function assignVectorColours(dataArray, expressionArray) {
+    var maxValue = 100000;
 
-    var maxValue = 130000;
-
-    // Calculate color for each state based on the unemployment rate
+    // Calculate color for each state based on yearly data
     dataArray.forEach(function(row) {
-        var green = (row["Amount"] / maxValue) * 255;
-        var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
-        expressionArray.push(row["STATE"], color);
+        var red = (row["Amount"] / maxValue) * 255;
+        var color = "rgba(" + red + ", " + 0 + ", " + 0 + ", 1)";
+        expressionArray.push(row[rowName], color);
     });
 
 
@@ -36,7 +64,7 @@ function assignVectorColours(dataArray, expressionArray) {
 }
 
 
-function getCSVFloatColumnData(columnName, allText, newData) {
+function getCSVFloatColumnData(columnValueName, allText, newData, columnName) {
     var allTextLines = allText.split(/\r\n|\n/);
     var headers = allTextLines[0].split(',');
     var tempData = new Map();
@@ -49,8 +77,50 @@ function getCSVFloatColumnData(columnName, allText, newData) {
                 tempData.set(headers[j],data[j]);
             }
 
-            newData.push({"STATE": tempData.get("State"), "Amount": parseFloat(tempData.get(columnName))})
+            newData.push({"STATE": tempData.get(columnName), "Amount": parseFloat(tempData.get(columnValueName))})
         }
     }
+}
+
+function generatePopup(chartColumns, feature, featureHeader, clickPos) {
+
+    if(currentLayer === 'states') {
+        getChartData(chartColumns, stateCsvData, tempData2, feature.properties.STATE);
+    } else {
+        getChartData(chartColumns, zipCsvData, tempData2, feature.properties.COUNTY);
+    }
+
+    console.log(feature);
+
+    var popup = new mapboxgl.Popup({offset: [0, -15]})
+        .setLngLat(clickPos.lngLat)
+
+        .setHTML('<img src="img/Mastercard.png" style="width=140px; height:50px; margin:auto;"><br>' +
+            '<table>' +
+            '<tr><th><h3>Location</h3></th>' +
+            '<th><h3>Value</h3></th></tr>' +
+            '<tr><td><h3>' + featureHeader + '</h3></td>' +
+            '<td><h3>$' + tempData2[datasetPosition - 1] + '</h3></td></tr></table>').addTo(map);
+
+    generateChart(chartColumns, tempData2)
+}
+
+function switchLayer(input) {
+
+    var data = [];
+    var expression = ["match", ["get", "STATE"]];
+    var expression2 = ["match", ["get", "COUNTY"]];
+
+    if(currentLayer === 'states') {
+        getCSVFloatColumnData(input.target.id, stateCsvData, data, 'State');
+        assignVectorColours(data, expression, "STATE");
+        map.setPaintProperty('states-join', 'fill-color', expression);
+    } else {
+        getCSVFloatColumnData(input.target.id, zipCsvData, data, 'State');
+        assignVectorColours(data, expression2, "STATE");
+        map.setPaintProperty('zip-join', 'fill-color', expression2);
+    }
+
+    datasetPosition = input.target.value;
 }
 

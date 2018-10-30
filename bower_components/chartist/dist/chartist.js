@@ -997,7 +997,7 @@ var Chartist = {
       var content = document.createElement('span');
       content.className = classes.join(' ');
       content.setAttribute('xmlns', Chartist.namespaces.xhtml);
-      content.innerText = labels[index];
+      content.rText = labels[index];
       content.style[axis.units.len] = Math.round(positionalData[axis.units.len]) + 'px';
       content.style[axis.counterUnits.len] = Math.round(positionalData[axis.counterUnits.len]) + 'px';
 
@@ -2160,7 +2160,7 @@ var Chartist = {
     // TODO: Handle case where content is not a string nor a DOM Node
     if(typeof content === 'string') {
       var container = document.createElement('div');
-      container.innerHTML = content;
+      container.rHTML = content;
       content = container.firstChild;
     }
 

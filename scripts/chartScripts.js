@@ -39,8 +39,6 @@ function getChartData(columnNames, allText, newData, locationName) {
                 tempData.set(headers[j],data[j]);
             }
 
-            console.log(tempData);
-
             if(tempData.get("State") === locationName) {
                 for(var k=0; k<columnNames.length; k++) {
                     newData.push(parseFloat(tempData.get(columnNames[k])))

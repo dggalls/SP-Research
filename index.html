@@ -14,6 +14,16 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="./scripts/mapScripts.js"></script>
     <script src="./scripts/chartScripts.js"></script>
+    <script src="./scripts/generalScripts.js"></script>
+    <script src="./scripts/maps.js"></script>
+
+
+    <!--JQuery Slider-->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+
     <link href='./styles/styles.css' rel='stylesheet' />
 </head>
 
@@ -25,7 +35,7 @@
     <div class="ct-chart ct-square" id="chart-2a"></div>
 </div>
 
-<div class='map-overlay' id='legend'>
+<div class='map-overlay' id='data-switch'>
     <div id="menu">
         <input type="radio" name="yearValue" value="1" id="Y1" checked>
         <label for='Y1'>Year 1 Total Spending</label>
@@ -46,6 +56,19 @@
 </div>
 
 <div class='map-overlay'></div>
+
+<div class="map-overlay" id="legend">
+    <div id="legend-text" style="text-align: center"></div>
+    <hr>
+</div>
+
+<div class="map-overlay" id="filter">
+    <p><input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;"></p>
+    <div id="slider-range">
+    </div>
+
+</div>
+
 
 <script>
     //Mapbox Access Token
@@ -72,8 +95,6 @@
     var zipCsvData;
     var currentLayer = 'states';
 
-    var datasetPosition = 1;
-
     // Read CSV
     $(document).ready(function() {
         $.ajax({
@@ -82,7 +103,7 @@
             dataType: "text",
             success: function(data) {
                 getCSVFloatColumnData('Y1', data, initialData, "State");
-                assignVectorColours(initialData, expression, "STATE");
+                assignVectorColours(initialData, expression, "STATE", 'states');
                 stateCsvData = data;
             }
         });
@@ -95,14 +116,12 @@
             dataType: "text",
             success: function(data) {
                 getCSVFloatColumnData('Y1', data, initialData2, "State");
-                assignVectorColours(initialData2, expression2, "STATE");
+                assignVectorColours(initialData2, expression2, "STATE", 'counties');
                 zipCsvData = data;
                 loadLayer();
             }
         });
     });
-
-    console.log(initialData2);
 
     //Functiionality for switching layer style
     var layerList = document.getElementById('menu');
@@ -112,36 +131,48 @@
         inputs[i].onclick = switchLayer;
     }
 
-
     map.on('zoom', function() {
-        if(map.getZoom() > 6 && map.getLayer('states-join').visibility === 'visible') {
-            map.setLayoutProperty('states-join', 'visibility', 'none')
-            map.setLayoutProperty('zip-join', 'visibility', 'visible')
-            currentLayer = 'counties'
+        var chartName = document.getElementById("chart-name");
+
+        if(map.getZoom() >= 7 && map.getLayer('states-join').visibility === 'visible') {
+            map.setLayoutProperty('states-join', 'visibility', 'none');
+            map.setLayoutProperty('zip-join', 'visibility', 'visible');
+            currentLayer = 'counties';
+
+            var legendDiv = document.getElementById('legend');
+            legendDiv.innerHTML = '';
+            addLegend('counties');
+
         } else if (map.getZoom() < 7 && map.getLayer('states-join').visibility === 'none'){
-            map.setLayoutProperty('states-join', 'visibility', 'visible')
-            map.setLayoutProperty('zip-join', 'visibility', 'none')
-            currentLayer = 'states'
+            map.setLayoutProperty('states-join', 'visibility', 'visible');
+            map.setLayoutProperty('zip-join', 'visibility', 'none');
+            currentLayer = 'states';
+
+            addLegend('states');
         }
     });
 
     var tempData2 = [];
 
-
+    var chartColumns = ['Y1', 'Y2', 'Y3', 'Y4', 'Y5'];
+    var layerId;
+    var hideClick = false;
+    var filters = [];
 
     //Functionality for when a user clicks on a registered location
     map.on('click', function(e) {
 
-        var chartColumns = ['Y1', 'Y2', 'Y3', 'Y4', 'Y5'];
+
         csvColumnData = [];
         tempData2 = [];
 
+
         if(currentLayer === 'states') {
-            var features = map.queryRenderedFeatures(e.point, {
-                layers: ['states-join'] });
+            var features = map.queryRenderedFeatures(e.point, { layers: ['states-join'] });
+            layerId = 'states-join';
         } else {
-            var features = map.queryRenderedFeatures(e.point, {
-                layers: ['zip-join'] });
+            var features = map.queryRenderedFeatures(e.point, { layers: ['zip-join'] });
+            layerId = 'zip-join';
         }
 
         if (!features.length) {
@@ -149,8 +180,13 @@
         }
         var feature = features[0];
 
-        console.log(feature);
+        filters = [];
+        findLocationNamesBetweenValues(initialData, filters, $("#slider-range").slider("values", 0), $("#slider-range").slider("values", 1));
+        console.log(filters);
 
+        if(hideClick) {
+            map.setFilter(layerId, ['match', ['get', 'STATE'], filters, true, false])
+        }
         generatePopup(chartColumns, feature, feature.properties.NAME, e);
     });
 

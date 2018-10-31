@@ -8,7 +8,7 @@ function loadLayer() {
         });
 
         map.addLayer({
-            "id": "zip-join",
+            "id": "counties",
             "type": "fill",
             "source": "amZips",
             "source-layer": "gz_2010_us_050_00_5m-9au8es",
@@ -29,7 +29,7 @@ function loadLayer() {
 
 
         map.addLayer({
-            "id": "states-join",
+            "id": "states",
             "type": "fill",
             "source": "American States",
             "source-layer": "AmericaStates",
@@ -74,10 +74,11 @@ function assignVectorColours(dataArray, expressionArray, rowName, dataset) {
 }
 
 
-function getCSVFloatColumnData(columnValueName, allText, newData, columnName) {
+function getCSVFloatColumnData(columnValueName, allText, columnName) {
     var allTextLines = allText.split(/\r\n|\n/);
     var headers = allTextLines[0].split(',');
     var tempData = new Map();
+    var newData = [];
 
     for (var i=1; i<allTextLines.length; i++) {
         var data = allTextLines[i].split(',');
@@ -90,6 +91,8 @@ function getCSVFloatColumnData(columnValueName, allText, newData, columnName) {
             newData.push({"STATE": tempData.get(columnName), "Amount": parseFloat(tempData.get(columnValueName))})
         }
     }
+
+    return newData;
 }
 
 function generatePopup(chartColumns, feature, featureHeader, clickPos) {
@@ -97,7 +100,7 @@ function generatePopup(chartColumns, feature, featureHeader, clickPos) {
     if(currentLayer === 'states') {
         getChartData(chartColumns, stateCsvData, tempData2, feature.properties.STATE);
     } else {
-        getChartData(chartColumns, zipCsvData, tempData2, feature.properties.COUNTY);
+        getChartData(chartColumns, countyCsvData, tempData2, feature.properties.COUNTY);
     }
 
     var popup = new mapboxgl.Popup({offset: [0, -15]})
@@ -115,24 +118,25 @@ function generatePopup(chartColumns, feature, featureHeader, clickPos) {
 
 function switchLayer(input) {
 
-    var data = [];
     var expression = ["match", ["get", "STATE"]];
     var expression2 = ["match", ["get", "COUNTY"]];
 
     if(currentLayer === 'states') {
-        getCSVFloatColumnData(input.target.id, stateCsvData, data, 'State');
-        assignVectorColours(data, expression, "STATE", 'states');
-        map.setPaintProperty('states-join', 'fill-color', expression);
+        initialData = getCSVFloatColumnData(input.target.id, stateCsvData, 'State');
+        assignVectorColours(initialData, expression, "STATE", 'states');
+        map.setPaintProperty('states', 'fill-color', expression);
     } else {
-        getCSVFloatColumnData(input.target.id, zipCsvData, data, 'State');
-        assignVectorColours(data, expression2, "STATE", 'counties');
-        map.setPaintProperty('zip-join', 'fill-color', expression2);
+        initialData2 = getCSVFloatColumnData(input.target.id, countyCsvData, 'State');
+        assignVectorColours(initialData2, expression2, "STATE", 'counties');
+        map.setPaintProperty('counties', 'fill-color', expression2);
     }
     datasetPosition = input.target.value;
+    map.setFilter('states', null);
+    map.setFilter('counties', null);
 }
 
 function addLegend(dataset) {
-    var colors = ['#000000', '#240000', '#490000', '#6D0000', '#920000', '#B60000', '#DB0000', '#FF0000'];
+    var colors = ['rgba(0,0,0,0.6)', 'rgba(36,0,0, 0.6)', 'rgba(73,0,0,0.6)', 'rgba(109,0,0,0.6)', 'rgba(146,0,0,0.6)', 'rgba(182,0,0,0.6)', 'rgba(219,0,0,0.6)', 'rgba(255,0,0,0.6)'];
     var layers;
     var legendText;
     var legendDiv = document.getElementById('legend');
@@ -165,12 +169,17 @@ function addLegend(dataset) {
     }
 }
 
-function findLocationNamesBetweenValues(dataArray, filteredData, startValue, endValue) {
+function findLocationNamesBetweenValues(dataArray, startValue, endValue) {
+    var filteredData = [];
+
+
     dataArray.forEach(function(row) {
         if(row['Amount'] >= startValue && row['Amount'] <= endValue) {
             filteredData.push(row['STATE']);
         }
     });
+
+    return filteredData;
 }
 
 function addFilterUI(){
@@ -180,7 +189,8 @@ function addFilterUI(){
             min: 0,
             max: 100000,
             values: [ 0, 100000 ],
-            step: 8,
+            step: 1000,
+            animate: "slow",
             orientation: "vertical",
             slide: function( event, ui ) {
                 $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
@@ -189,4 +199,11 @@ function addFilterUI(){
         $( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
             " - $" + $( "#slider-range" ).slider( "values", 1 ) );
     } );
+}
+
+function applyFilter() {
+    var stateFilters = findLocationNamesBetweenValues(initialData, $("#slider-range").slider("values", 0), $("#slider-range").slider("values", 1));
+    var countyFilters = getStateNumbers(stateFilters);
+    map.setFilter('states', ['match', ['get', 'STATE'], stateFilters, true, false]);
+    map.setFilter('counties', ['match', ['get', 'STATE'], countyFilters, true, false]);
 }

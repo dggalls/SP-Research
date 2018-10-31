@@ -58,15 +58,19 @@
 <div class='map-overlay'></div>
 
 <div class="map-overlay" id="legend">
-    <div id="legend-text" style="text-align: center"></div>
+    <div id="legend-text" style="text-align: center; font-weight: bold"></div>
     <hr>
 </div>
 
-<div class="map-overlay" id="filter">
-    <p><input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;"></p>
-    <div id="slider-range">
-    </div>
+<div class="map-overlay" style="text-align:center;">
+    <div id="timeline"></div>
+</div>
 
+<div class="map-overlay" id="filter">
+    <p style="font-weight:bold;text-align:center;font-family: 'Trebuchet MS';">Filter Data</p><hr>
+    <p><input type="text" id="amount" readonly style="font-size:11px;border:0;color:#f6931f; font-weight:bold;padding:0px;"></p>
+    <center><div id="slider-range"></div></center>
+    <button class="filterButton" onclick="applyFilter();">Apply</button>
 </div>
 
 
@@ -92,7 +96,7 @@
     var initialData2 = [];
 
     var stateCsvData;
-    var zipCsvData;
+    var countyCsvData;
     var currentLayer = 'states';
 
     // Read CSV
@@ -102,7 +106,7 @@
             url: "./AMStates.csv",
             dataType: "text",
             success: function(data) {
-                getCSVFloatColumnData('Y1', data, initialData, "State");
+                initialData = getCSVFloatColumnData('Y1', data, "State");
                 assignVectorColours(initialData, expression, "STATE", 'states');
                 stateCsvData = data;
             }
@@ -115,9 +119,9 @@
             url: "./AMCounties.csv",
             dataType: "text",
             success: function(data) {
-                getCSVFloatColumnData('Y1', data, initialData2, "State");
+                initialData2 = getCSVFloatColumnData('Y1', data, "State");
                 assignVectorColours(initialData2, expression2, "STATE", 'counties');
-                zipCsvData = data;
+                countyCsvData = data;
                 loadLayer();
             }
         });
@@ -134,18 +138,18 @@
     map.on('zoom', function() {
         var chartName = document.getElementById("chart-name");
 
-        if(map.getZoom() >= 7 && map.getLayer('states-join').visibility === 'visible') {
-            map.setLayoutProperty('states-join', 'visibility', 'none');
-            map.setLayoutProperty('zip-join', 'visibility', 'visible');
+        if(map.getZoom() >= 7 && map.getLayer('states').visibility === 'visible') {
+            map.setLayoutProperty('states', 'visibility', 'none');
+            map.setLayoutProperty('counties', 'visibility', 'visible');
             currentLayer = 'counties';
 
             var legendDiv = document.getElementById('legend');
             legendDiv.innerHTML = '';
             addLegend('counties');
 
-        } else if (map.getZoom() < 7 && map.getLayer('states-join').visibility === 'none'){
-            map.setLayoutProperty('states-join', 'visibility', 'visible');
-            map.setLayoutProperty('zip-join', 'visibility', 'none');
+        } else if (map.getZoom() < 7 && map.getLayer('states').visibility === 'none'){
+            map.setLayoutProperty('states', 'visibility', 'visible');
+            map.setLayoutProperty('counties', 'visibility', 'none');
             currentLayer = 'states';
 
             addLegend('states');
@@ -156,7 +160,6 @@
 
     var chartColumns = ['Y1', 'Y2', 'Y3', 'Y4', 'Y5'];
     var layerId;
-    var hideClick = false;
     var filters = [];
 
     //Functionality for when a user clicks on a registered location
@@ -168,11 +171,11 @@
 
 
         if(currentLayer === 'states') {
-            var features = map.queryRenderedFeatures(e.point, { layers: ['states-join'] });
-            layerId = 'states-join';
+            var features = map.queryRenderedFeatures(e.point, { layers: ['states'] });
+            layerId = 'states';
         } else {
-            var features = map.queryRenderedFeatures(e.point, { layers: ['zip-join'] });
-            layerId = 'zip-join';
+            var features = map.queryRenderedFeatures(e.point, { layers: ['counties'] });
+            layerId = 'counties';
         }
 
         if (!features.length) {
@@ -180,13 +183,8 @@
         }
         var feature = features[0];
 
-        filters = [];
-        findLocationNamesBetweenValues(initialData, filters, $("#slider-range").slider("values", 0), $("#slider-range").slider("values", 1));
-        console.log(filters);
+        console.log(feature);
 
-        if(hideClick) {
-            map.setFilter(layerId, ['match', ['get', 'STATE'], filters, true, false])
-        }
         generatePopup(chartColumns, feature, feature.properties.NAME, e);
     });
 

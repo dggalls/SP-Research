@@ -1,4 +1,9 @@
-body { margin:0; padding:0; }
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600,700);
+
+body {
+    margin:0;
+    padding:0;
+}
 
 h3 {
     font-family: "Trebuchet MS";
@@ -14,8 +19,8 @@ h3 {
     margin-right: 20px;
     padding-top: 20px;
     font-family: Arial, sans-serif;
-    overflow: auto;
     border-radius: 3px;
+    overflow: hidden;
 }
 
 #legend-text {
@@ -35,18 +40,36 @@ h3 {
     border-radius: 3px;
 }
 
+#timeline {
+    top: 20px;
+    display: inline-block;
+    width: 400px;
+    height: 40px;
+}
+
+#amount {
+    text-align: center;
+    font-family: "Trebuchet MS";
+}
+
+#slider-range {
+    height: 300px;
+    width: 10px;
+    padding-left: 5px;
+}
+
 #filter {
     left: 0;
     top: 20px;
-    height: 400px;
-    padding-top:10px;
-    padding-left:10px;
-    padding-right:10px;
+    height: 490px;
     margin-left: 20px;
+    padding-top: 0px;
+    margin-right: 0px;
     margin-bottom: 40px;
-    width: 70px;
-    display: inline-block;
-    border-radius: 3px;
+    width: 120px;
+    display: inline;
+    border-radius: 10px;
+    background-color: white;
 }
 
 .legend-key {
@@ -103,4 +126,45 @@ th {
 
 table, th {
     border: 1px solid white;
+}
+
+/* General Buttons */
+.filterButton {
+    width: 70px;
+    height: 40px;
+    background: linear-gradient(to right, rgba(255, 0, 0, 0.7) 30%, rgba(255,165,0, 0.7) 100%); /* W3C */
+    border: none;
+    border-radius: 5px;
+    position: relative;
+    color: #fbfbfb;
+    font-weight: 600;
+    font-family: 'Open Sans', sans-serif;
+    text-shadow: 1px 1px 1px #ff0000;
+    font-size: 15px;
+    text-align: left;
+    text-indent: 5px;
+    box-shadow: 0px 3px 0px 0px #ff0000;
+    cursor: pointer;
+
+
+    display: block;
+    margin: 0 auto;
+    margin-top: 20px;
+}
+button:active {
+    box-shadow: 0px 2px 0px 0px rgba(0,0,0,.2);
+    top: 1px;
+}
+
+.ui-slider-vertical {
+    width:2em;
+    left:-.6em;
+    text-decoration:none;
+    text-align:center;
+    background-color:red;
+    opacity: 0.6;
+}
+
+.ui-slider-handle {
+    background: red;
 }

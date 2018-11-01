@@ -1,61 +1,7 @@
-function loadLayer() {
-    map.on('load', function() {
-
-
-        map.addSource("amZips", {
-            type: "vector",
-            url: "mapbox://dggalls.6gyvbere"
-        });
-
-        map.addLayer({
-            "id": "counties",
-            "type": "fill",
-            "source": "amZips",
-            "source-layer": "gz_2010_us_050_00_5m-9au8es",
-            'layout': {
-                'visibility': 'none'
-            },
-            "paint": {
-                "fill-color": expression2,
-                "fill-outline-color": '#FFFFFF',
-                'fill-opacity': 0.6
-            }
-        });
-
-        map.addSource("American States", {
-            type: "vector",
-            url: "mapbox://dggalls.cjnd92u7e02is2voioguvw5cr-05azb"
-        });
-
-
-        map.addLayer({
-            "id": "states",
-            "type": "fill",
-            "source": "American States",
-            "source-layer": "AmericaStates",
-            'layout': {
-                'visibility': 'visible'
-            },
-            "paint": {
-                "fill-color": expression,
-                'fill-opacity': 0.6,
-                "fill-outline-color": '#FFFFFF',
-            }
-        });
-
-        addLegend('states');
-
-        addFilterUI();
-
-        datasetPosition = 1;
-
-    });
-}
-
 function assignVectorColours(dataArray, expressionArray, rowName, dataset) {
     var maxValue;
 
-    if(dataset === 'states'){
+    if(dataset === 'States'){
         maxValue = 100000;
     } else {
         maxValue = 10000;
@@ -65,6 +11,7 @@ function assignVectorColours(dataArray, expressionArray, rowName, dataset) {
 
         var red = (row["Amount"] / maxValue) * 255;
         var color = "rgba(" + red + ", " + 0 + ", " + 0 + ", 1)";
+        console.log(row);
         expressionArray.push(row[rowName], color);
     });
 
@@ -97,9 +44,9 @@ function getCSVFloatColumnData(columnValueName, allText, columnName) {
 
 function generatePopup(chartColumns, feature, featureHeader, clickPos) {
 
-    if(currentLayer === 'states') {
-        getChartData(chartColumns, stateCsvData, tempData2, feature.properties.STATE);
-    } else {
+    if(currentLayer === 'States') {
+        getChartData(chartColumns, stateCsvData, tempData2, feature.properties.STATE_CODE);
+    } else if (currentLayer === 'Counties') {
         getChartData(chartColumns, countyCsvData, tempData2, feature.properties.COUNTY);
     }
 
@@ -118,35 +65,34 @@ function generatePopup(chartColumns, feature, featureHeader, clickPos) {
 
 function switchLayer(input) {
 
-    var expression = ["match", ["get", "STATE"]];
+    var expression = ["match", ["get", "STATE_CODE"]];
     var expression2 = ["match", ["get", "COUNTY"]];
 
-    if(currentLayer === 'states') {
+    if(currentLayer === 'States') {
         initialData = getCSVFloatColumnData(input.target.id, stateCsvData, 'State');
-        assignVectorColours(initialData, expression, "STATE", 'states');
-        map.setPaintProperty('states', 'fill-color', expression);
-    } else {
+        assignVectorColours(initialData, expression, "STATE", 'States');
+        map.setPaintProperty('States', 'fill-color', expression);
+    } else  if(currentLayer === 'Counties'){
         initialData2 = getCSVFloatColumnData(input.target.id, countyCsvData, 'State');
-        assignVectorColours(initialData2, expression2, "STATE", 'counties');
-        map.setPaintProperty('counties', 'fill-color', expression2);
+        assignVectorColours(initialData2, expression2, "STATE", 'Counties');
+        map.setPaintProperty('Counties', 'fill-color', expression2);
     }
     datasetPosition = input.target.value;
-    map.setFilter('states', null);
-    map.setFilter('counties', null);
+    map.setFilter('States', null);
+    map.setFilter('Counties', null);
 }
 
 function addLegend(dataset) {
     var colors = ['rgba(0,0,0,0.6)', 'rgba(36,0,0, 0.6)', 'rgba(73,0,0,0.6)', 'rgba(109,0,0,0.6)', 'rgba(146,0,0,0.6)', 'rgba(182,0,0,0.6)', 'rgba(219,0,0,0.6)', 'rgba(255,0,0,0.6)'];
     var layers;
-    var legendText;
+    var legendText = 'U.S. ' + currentLayer;
     var legendDiv = document.getElementById('legend');
+    legendDiv.innerHTML = '';
 
-    if(dataset === 'states'){
+    if(dataset === 'States'){
         layers = ['0-12,500', '12,500-25,000', '25,000-37,500', '37,500-50,000', '50,000-62,500', '62,500-75,000', '75,000-87,500', '87,500+'];
-        legendText = 'U.S. States';
     } else {
         layers = ['0-1250', '1250-2500', '2500-3750', '3750-5000', '5000-6250', '6250-7500', '7500-8750', '8750+'];
-        legendText = 'U.S. Counties';
     }
 
     legendDiv.innerHTML = legendText + '<hr>';
@@ -204,6 +150,7 @@ function addFilterUI(){
 function applyFilter() {
     var stateFilters = findLocationNamesBetweenValues(initialData, $("#slider-range").slider("values", 0), $("#slider-range").slider("values", 1));
     var countyFilters = getStateNumbers(stateFilters);
-    map.setFilter('states', ['match', ['get', 'STATE'], stateFilters, true, false]);
-    map.setFilter('counties', ['match', ['get', 'STATE'], countyFilters, true, false]);
+    console.log(stateFilters);
+    map.setFilter('States', ['match', ['get', 'STATE'], stateFilters, true, false]);
+    map.setFilter('Counties', ['match', ['get', 'STATE'], countyFilters, true, false]);
 }

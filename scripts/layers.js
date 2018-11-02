@@ -56,7 +56,7 @@ function loadLayer() {
             "source": "amOutline",
             "source-layer": "USOutline-47n74h",
             'layout': {
-                'visibility': 'visible'
+                'visibility': 'none'
             },
             "paint": {
                 "fill-color": 'rgb(255,146,0)',
@@ -98,7 +98,7 @@ function loadLayer() {
             "source": "amCities",
             "source-layer": "us_cities-5d0lcu",
             'layout': {
-                'visibility': 'none'
+                'visibility': 'visible'
             },
             "paint": {
                 "fill-color": 'rgb(255,146,0)',
@@ -136,6 +136,10 @@ function loadLayer() {
 
     });
 
+
+
+
+
     function hideAllBut(shownLayer) {
         var layers = ['States', 'Counties', 'MSA', 'Outline', 'Cities', 'Zips'];
         layers.forEach(function (layer) {
@@ -166,4 +170,6 @@ function loadLayer() {
             hideAllBut('Zips');
         }
     });
+
+
 }

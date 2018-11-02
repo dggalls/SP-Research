@@ -11,7 +11,6 @@ function assignVectorColours(dataArray, expressionArray, rowName, dataset) {
 
         var red = (row["Amount"] / maxValue) * 255;
         var color = "rgba(" + red + ", " + 0 + ", " + 0 + ", 1)";
-        console.log(row);
         expressionArray.push(row[rowName], color);
     });
 
@@ -44,21 +43,37 @@ function getCSVFloatColumnData(columnValueName, allText, columnName) {
 
 function generatePopup(chartColumns, feature, featureHeader, clickPos) {
 
+    var tableHTML;
+
     if(currentLayer === 'States') {
         getChartData(chartColumns, stateCsvData, tempData2, feature.properties.STATE_CODE);
-    } else if (currentLayer === 'Counties') {
+    } else {
         getChartData(chartColumns, countyCsvData, tempData2, feature.properties.COUNTY);
+    }
+
+    if(currentLayer === 'States' || currentLayer === 'Counties') {
+
+        tableHTML = '<img src="img/Mastercard.png" style="width=140px; height:50px; margin:auto;"><br>' +
+            '<table>' +
+            '<tr><th><h3>Location</h3></th>' +
+            '<th><h3>Value</h3></th></tr>' +
+            '<tr><td><h3>' + featureHeader + '</h3></td>' +
+            '<td><h3>$' + tempData2[datasetPosition - 1] + '</h3></td></tr></table>';
+
+        console.log(tempData2[0]);
+
+    } else {
+
+        tableHTML = '<img src="img/Mastercard.png" style="width=140px; height:50px; margin:auto;"><br>' +
+            '<table style="width:300px;text-align:center;">' +
+            '<tr><th style="text-align: center"><h3>Location</h3></th>' +
+            '<tr><td style="text-align: center"><h3>' + featureHeader + '</h3></td></tr></table>';
     }
 
     var popup = new mapboxgl.Popup({offset: [0, -15]})
         .setLngLat(clickPos.lngLat)
 
-        .setHTML('<img src="img/Mastercard.png" style="width=140px; height:50px; margin:auto;"><br>' +
-            '<table>' +
-            '<tr><th><h3>Location</h3></th>' +
-            '<th><h3>Value</h3></th></tr>' +
-            '<tr><td><h3>' + featureHeader + '</h3></td>' +
-            '<td><h3>$' + tempData2[datasetPosition - 1] + '</h3></td></tr></table>').addTo(map);
+        .setHTML(tableHTML).addTo(map);
 
     generateChart(chartColumns, tempData2)
 }
@@ -150,7 +165,19 @@ function addFilterUI(){
 function applyFilter() {
     var stateFilters = findLocationNamesBetweenValues(initialData, $("#slider-range").slider("values", 0), $("#slider-range").slider("values", 1));
     var countyFilters = getStateNumbers(stateFilters);
-    console.log(stateFilters);
-    map.setFilter('States', ['match', ['get', 'STATE'], stateFilters, true, false]);
+    map.setFilter('States', ['match', ['get', 'STATE_CODE'], stateFilters, true, false]);
     map.setFilter('Counties', ['match', ['get', 'STATE'], countyFilters, true, false]);
 }
+
+function getLegendGrouping() {
+    var legendGroups = {};
+
+    legendGroups = {
+        Outline: ['Overall'],
+        States: ['0-12,500', '12,500-25,000', '25,000-37,500', '37,500-50,000', '50,000-62,500', '62,500-75,000', '75,000-87,500', '87,500+'],
+        MSA: [],
+        Counties: [],
+        Cities: [],
+        Zips: []
+    };
+};

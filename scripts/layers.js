@@ -1,6 +1,7 @@
 function loadLayer() {
     map.on('load', function() {
 
+        var tempData2 = [];
 
         map.addSource("amCounties", {
             type: "vector",
@@ -58,7 +59,7 @@ function loadLayer() {
                 'visibility': 'visible'
             },
             "paint": {
-                "fill-color": 'red',
+                "fill-color": 'rgb(255,146,0)',
                 'fill-opacity': 0.6,
                 "fill-outline-color": '#FFFFFF'
             }
@@ -100,7 +101,7 @@ function loadLayer() {
                 'visibility': 'none'
             },
             "paint": {
-                "fill-color": 'red',
+                "fill-color": 'rgb(255,146,0)',
                 'fill-opacity': 0.6,
                 "fill-outline-color": '#FFFFFF'
             }
@@ -121,7 +122,7 @@ function loadLayer() {
                 'visibility': 'none'
             },
             "paint": {
-                "fill-color": 'red',
+                "fill-color": 'rgb(255,90,0)',
                 'fill-opacity': 0.6,
                 "fill-outline-color": '#FFFFFF'
             }

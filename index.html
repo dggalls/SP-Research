@@ -100,7 +100,7 @@
     $(document).ready(function() {
         $.ajax({
             type: "GET",
-            url: "./AMStates.csv",
+            url: "./csv/AMStates.csv",
             dataType: "text",
             success: function(data) {
                 initialData = getCSVFloatColumnData('Y1', data, "State");
@@ -113,7 +113,7 @@
     $(document).ready(function() {
         $.ajax({
             type: "GET",
-            url: "./AMCounties.csv",
+            url: "./csv/AMCounties.csv",
             dataType: "text",
             success: function(data) {
                 initialData2 = getCSVFloatColumnData('Y1', data, "State");
@@ -132,14 +132,11 @@
         inputs[i].onclick = switchLayer;
     }
 
-    var tempData2 = [];
-
     var chartColumns = ['Y1', 'Y2', 'Y3', 'Y4', 'Y5'];
     var filters = [];
 
     //Functionality for when a user clicks on a registered location
     map.on('click', function(e) {
-
 
         csvColumnData = [];
         tempData2 = [];
@@ -152,7 +149,6 @@
         var feature = features[0];
 
         console.log(feature);
-
 
         if(currentLayer === 'States' || currentLayer === 'Counties') {
             generatePopup(chartColumns, feature, feature.properties.NAME, e);

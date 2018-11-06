@@ -38,21 +38,42 @@
 
 <div class='map-overlay' id='data-switch'>
     <div id="menu">
-        <input type="radio" name="yearValue" value="1" id="Y1" checked>
-        <label for='Y1'>Year 1 Total Spending</label>
+        <input type="radio" name="yearValue" value="1" id="1" checked>
+        <label for='1'>Month 1 Total Spending</label>
         <br>
-        <input type="radio" name="yearValue" value="2" id="Y2">
-        <label for='Y2'>Year 2 Total Spending</label>
+        <input type="radio" name="yearValue" value="1" id="2">
+        <label for='2'>Month 2 Total Spending</label>
         <br>
-        <input type="radio" name="yearValue" value="3" id="Y3">
-        <label for='Y3'>Year 3 Total Spending</label>
+        <input type="radio" name="yearValue" value="1" id="3">
+        <label for='3'>Month 3 Total Spending</label>
         <br>
-        <input type="radio" name="yearValue" value="4" id="Y4">
-        <label for='Y4'>Year 4 Total Spending</label>
+        <input type="radio" name="yearValue" value="1" id="4">
+        <label for='4'>Month 4 Total Spending</label>
         <br>
-        <input type="radio" name="yearValue" value="5" id="Y5">
-        <label for='Y5'>Year 5 Total Spending</label>
-
+        <input type="radio" name="yearValue" value="1" id="5">
+        <label for='5'>Month 5 Total Spending</label>
+        <br>
+        <input type="radio" name="yearValue" value="1" id="6">
+        <label for='6'>Month 6 Total Spending</label>
+        <br>
+        <input type="radio" name="yearValue" value="2" id="7">
+        <label for='7'>Month 7 Total Spending</label>
+        <br>
+        <input type="radio" name="yearValue" value="3" id="8">
+        <label for='8'>Month 8 Total Spending</label>
+        <br>
+        <input type="radio" name="yearValue" value="4" id="9">
+        <label for='9'>Month 9 Total Spending</label>
+        <br>
+        <input type="radio" name="yearValue" value="5" id="10">
+        <label for='10'>Month 10 Total Spending</label>
+        <br>
+        <input type="radio" name="yearValue" value="4" id="11">
+        <label for='11'>Month 11 Total Spending</label>
+        <br>
+        <input type="radio" name="yearValue" value="4" id="12">
+        <label for='12'>Month 12 Total Spending</label>
+        <br>
     </div>
 </div>
 
@@ -87,38 +108,25 @@
     });
 
 
-    var expression = ["match", ["get", "STATE_CODE"]];
-    var expression2 = ["match", ["get", "COUNTY"]];
+    var expression = ["match", ["get", "POSTCODE"]];
     var initialData = [];
-    var initialData2 = [];
+    var monthData = [];
+    var zipData = [];
 
-    var stateCsvData;
-    var countyCsvData;
     var currentLayer = 'Outline';
 
-    // Read CSV
     $(document).ready(function() {
         $.ajax({
             type: "GET",
-            url: "./csv/AMStates.csv",
+            url: "./Pbcsv/Mnthly_Zip_Scaled_Amt_RESTAURANTS.csv",
             dataType: "text",
             success: function(data) {
-                initialData = getCSVFloatColumnData('Y1', data, "State");
-                assignVectorColours(initialData, expression, "STATE", 'States');
-                stateCsvData = data;
-            }
-        });
-    });
+                initialData = getCSVMonthlyData('scaled_amt', data, "Zip");
+                monthData = getDataForMonth(1, initialData);
 
-    $(document).ready(function() {
-        $.ajax({
-            type: "GET",
-            url: "./csv/AMCounties.csv",
-            dataType: "text",
-            success: function(data) {
-                initialData2 = getCSVFloatColumnData('Y1', data, "State");
-                assignVectorColours(initialData2, expression2, "STATE", 'counties');
-                countyCsvData = data;
+                assignVectorColours(monthData, expression, "Zip", 'Amount');
+                console.log(expression);
+                zipData = initialData;
                 loadLayer();
             }
         });
@@ -132,7 +140,7 @@
         inputs[i].onclick = switchLayer;
     }
 
-    var chartColumns = ['Y1', 'Y2', 'Y3', 'Y4', 'Y5'];
+    var chartColumns = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12'];
     var filters = [];
 
     //Functionality for when a user clicks on a registered location

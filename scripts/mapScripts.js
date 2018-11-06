@@ -1,18 +1,16 @@
 function assignVectorColours(dataArray, expressionArray, rowName, dataset) {
     var maxValue;
 
-    if(dataset === 'States'){
-        maxValue = 100000;
-    } else {
-        maxValue = 10000;
-    }
-    // Calculate color for each state based on yearly data
-    dataArray.forEach(function(row) {
+    maxValue = 1000000;
 
-        var red = (row["Amount"] / maxValue) * 255;
-        var color = "rgba(" + red + ", " + 0 + ", " + 0 + ", 1)";
-        expressionArray.push(row[rowName], color);
-    });
+    for (var key in dataArray) {
+        if (dataArray.hasOwnProperty(key)) {
+
+            var red = (dataArray[key] / maxValue) * 255;
+            var color = "rgba(" + red + ", " + 0 + ", " + 0 + ", 1)";
+            expressionArray.push(key, color);
+        }
+    }
 
 
     // Last value is the default, used where there is no data
@@ -20,25 +18,43 @@ function assignVectorColours(dataArray, expressionArray, rowName, dataset) {
 }
 
 
-function getCSVFloatColumnData(columnValueName, allText, columnName) {
+function getCSVMonthlyData(columnValueName, allText, columnName) {
     var allTextLines = allText.split(/\r\n|\n/);
     var headers = allTextLines[0].split(',');
     var tempData = new Map();
-    var newData = [];
+    var returnData = [];
+    var key;
 
     for (var i=1; i<allTextLines.length; i++) {
         var data = allTextLines[i].split(',');
+
         if (data.length == headers.length) {
 
             for (var j=0; j<headers.length; j++) {
                 tempData.set(headers[j],data[j]);
             }
 
-            newData.push({"STATE": tempData.get(columnName), "Amount": parseFloat(tempData.get(columnValueName))})
+            key = (tempData.get(columnName)).toString();
+
+            if(!(key in returnData)) {
+                returnData[key] = [];
+            }
+
+            returnData[key].push(tempData.get(columnValueName))
         }
     }
 
-    return newData;
+    return returnData;
+}
+
+function getDataForMonth(month, data) {
+    var returnData = {};
+
+    for (let [key, value] of Object.entries(data)) {
+        returnData[key] = value[0];
+    }
+
+    return returnData;
 }
 
 function generatePopup(chartColumns, feature, featureHeader, clickPos) {
@@ -80,18 +96,12 @@ function generatePopup(chartColumns, feature, featureHeader, clickPos) {
 
 function switchLayer(input) {
 
-    var expression = ["match", ["get", "STATE_CODE"]];
-    var expression2 = ["match", ["get", "COUNTY"]];
+    initialData = getDataForMonth(input.target.id, zipData);
+    // initialData = getCSVFloatColumnData(input.target.id, stateCsvData, 'State');
+    // assignVectorColours(initialData, expression, "STATE", 'States');
+    // map.setPaintProperty('States', 'fill-color', expression);
 
-    if(currentLayer === 'States') {
-        initialData = getCSVFloatColumnData(input.target.id, stateCsvData, 'State');
-        assignVectorColours(initialData, expression, "STATE", 'States');
-        map.setPaintProperty('States', 'fill-color', expression);
-    } else  if(currentLayer === 'Counties'){
-        initialData2 = getCSVFloatColumnData(input.target.id, countyCsvData, 'State');
-        assignVectorColours(initialData2, expression2, "STATE", 'Counties');
-        map.setPaintProperty('Counties', 'fill-color', expression2);
-    }
+
     datasetPosition = input.target.value;
     map.setFilter('States', null);
     map.setFilter('Counties', null);

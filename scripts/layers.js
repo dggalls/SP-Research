@@ -80,7 +80,7 @@ function loadLayer() {
                 'visibility': 'none'
             },
             "paint": {
-                "fill-color": 'red',
+                "fill-color": expression,
                 'fill-opacity': 0.6,
                 "fill-outline-color": '#FFFFFF'
             }

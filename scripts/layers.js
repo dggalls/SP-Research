@@ -5,19 +5,19 @@ function loadLayer() {
 
         map.addSource("amCounties", {
             type: "vector",
-            url: "mapbox://apipilots.bfqwghzn"
+            url: "mapbox://apipilots.7jv56krv"
         });
 
         map.addLayer({
             "id": "Counties",
             "type": "fill",
             "source": "amCounties",
-            "source-layer": "USCounties-62z5k5",
+            "source-layer": "MBI_US_R2017_Counties",
             'layout': {
                 'visibility': 'none'
             },
             "paint": {
-                "fill-color": expression2,
+                "fill-color": '#000000',
                 "fill-outline-color": '#FFFFFF',
                 'fill-opacity': 0.6
             }
@@ -25,7 +25,7 @@ function loadLayer() {
 
         map.addSource("amStates", {
             type: "vector",
-            url: "mapbox://apipilots.4b3gju1c"
+            url: "mapbox://apipilots.d2pm165l"
         });
 
 
@@ -33,12 +33,12 @@ function loadLayer() {
             "id": "States",
             "type": "fill",
             "source": "amStates",
-            "source-layer": "US_States_WithCode-8b4do5",
+            "source-layer": "MBI_US_R2017_States",
             'layout': {
                 'visibility': 'none'
             },
             "paint": {
-                "fill-color": expression,
+                "fill-color": '#000000',
                 'fill-opacity': 0.6,
                 "fill-outline-color": '#FFFFFF',
             }

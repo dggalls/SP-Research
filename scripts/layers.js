@@ -67,7 +67,7 @@ function loadLayer() {
 
         map.addSource("amZips", {
             type: "vector",
-            url: "mapbox://apipilots.d51ewehf"
+            url: "mapbox://apipilots.90cksls8"
         });
 
 
@@ -75,7 +75,7 @@ function loadLayer() {
             "id": "Zips",
             "type": "fill",
             "source": "amZips",
-            "source-layer": "USZips",
+            "source-layer": "MBI_US_R2017_Postcodes5",
             'layout': {
                 'visibility': 'none'
             },
@@ -107,17 +107,17 @@ function loadLayer() {
             }
         });
 
-        map.addSource("amMSA", {
+        map.addSource("amDMA", {
             type: "vector",
-            url: "mapbox://apipilots.c2bxp7gu"
+            url: "mapbox://apipilots.6303viky"
         });
 
 
         map.addLayer({
-            "id": "MSA",
+            "id": "DMA",
             "type": "fill",
-            "source": "amMSA",
-            "source-layer": "USMSA-30pqcv",
+            "source": "amDMA",
+            "source-layer": "USDMAs-6y1e0i",
             'layout': {
                 'visibility': 'none'
             },
@@ -137,7 +137,7 @@ function loadLayer() {
     });
 
     function hideAllBut(shownLayer) {
-        var layers = ['States', 'Counties', 'MSA', 'Outline', 'Cities', 'Zips'];
+        var layers = ['States', 'Counties', 'DMA', 'Outline', 'Cities', 'Zips'];
         layers.forEach(function (layer) {
             if(layer === shownLayer) {
                 map.setLayoutProperty(shownLayer, 'visibility', 'visible');
@@ -157,7 +157,7 @@ function loadLayer() {
         } else if (map.getZoom() < 6 && map.getZoom() >=3.5){
             hideAllBut('States');
         } else if(map.getZoom() >= 6 && map.getZoom() <7) {
-            hideAllBut('MSA');
+            hideAllBut('DMA');
         } else if(map.getZoom() >= 7 && map.getZoom() < 8) {
             hideAllBut('Counties');
         } else if(map.getZoom() >= 8 && map.getZoom() < 9.0) {

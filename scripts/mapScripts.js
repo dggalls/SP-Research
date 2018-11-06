@@ -175,7 +175,7 @@ function getLegendGrouping() {
     legendGroups = {
         Outline: ['Overall'],
         States: ['0-12,500', '12,500-25,000', '25,000-37,500', '37,500-50,000', '50,000-62,500', '62,500-75,000', '75,000-87,500', '87,500+'],
-        MSA: [],
+        DMA: [],
         Counties: [],
         Cities: [],
         Zips: []

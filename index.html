@@ -109,9 +109,13 @@
 
 
     var expression = ["match", ["get", "POSTCODE"]];
+    var expression2 = ["match", ["get", "ADMINCODE"]];
     var initialData = [];
-    var monthData = [];
+    var initialData2 = [];
+    var zipMonthData = [];
+    var FIPSMonthData = [];
     var zipData = [];
+    var FIPSData = [];
 
     var currentLayer = 'Outline';
 
@@ -122,15 +126,28 @@
             dataType: "text",
             success: function(data) {
                 initialData = getCSVMonthlyData('scaled_amt', data, "Zip");
-                monthData = getDataForMonth(1, initialData);
-
-                assignVectorColours(monthData, expression, "Zip", 'Amount');
-                console.log(expression);
+                zipMonthData = getDataForMonth(1, initialData);
+                assignVectorColours(zipMonthData, expression);
                 zipData = initialData;
+            }
+        });
+    });
+
+    $(document).ready(function() {
+        $.ajax({
+            type: "GET",
+            url: "./Pbcsv/Mnthly_FIPS_Scaled_Amt_RESTAURANTS.csv",
+            dataType: "text",
+            success: function(data) {
+                initialData2 = getCSVMonthlyData('scaled_amt', data, "FIPS");
+                FIPSMonthData = getDataForMonth(1, initialData2);
+                assignVectorColours(FIPSMonthData, expression2);
+                FIPSData = initialData;
                 loadLayer();
             }
         });
     });
+
 
     //Functiionality for switching layer style
     var layerList = document.getElementById('menu');
@@ -140,14 +157,13 @@
         inputs[i].onclick = switchLayer;
     }
 
-    var chartColumns = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9', 'M10', 'M11', 'M12'];
-    var filters = [];
-
     //Functionality for when a user clicks on a registered location
     map.on('click', function(e) {
 
         csvColumnData = [];
         tempData2 = [];
+
+        var chartColumns = getChartColumns(currentLayer);
 
         var features = map.queryRenderedFeatures(e.point, { layers: [currentLayer] });
 
@@ -158,12 +174,8 @@
 
         console.log(feature);
 
-        if(currentLayer === 'States' || currentLayer === 'Counties') {
+        if(currentLayer === 'Counties' || currentLayer === 'Zips') {
             generatePopup(chartColumns, feature, feature.properties.NAME, e);
-        } else if(currentLayer === 'Cities') {
-            generatePopup(chartColumns, feature, feature.properties.city, e);
-        } else {
-            generatePopup(chartColumns, feature, feature.properties.name, e);
         }
     });
 

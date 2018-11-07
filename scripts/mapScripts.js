@@ -1,7 +1,7 @@
-function assignVectorColours(dataArray, expressionArray, rowName, dataset) {
+function assignVectorColours(dataArray, expressionArray) {
     var maxValue;
 
-    maxValue = 1000000;
+    maxValue = 4000000;
 
     for (var key in dataArray) {
         if (dataArray.hasOwnProperty(key)) {
@@ -51,7 +51,7 @@ function getDataForMonth(month, data) {
     var returnData = {};
 
     for (let [key, value] of Object.entries(data)) {
-        returnData[key] = value[0];
+        returnData[key] = value[month-1];
     }
 
     return returnData;
@@ -61,11 +61,7 @@ function generatePopup(chartColumns, feature, featureHeader, clickPos) {
 
     var tableHTML;
 
-    if(currentLayer === 'States') {
-        getChartData(chartColumns, stateCsvData, tempData2, feature.properties.STATE_CODE);
-    } else {
-        getChartData(chartColumns, countyCsvData, tempData2, feature.properties.COUNTY);
-    }
+    getChartData(chartColumns, zipData, tempData2, feature.properties.NAME);
 
     if(currentLayer === 'States' || currentLayer === 'Counties') {
 

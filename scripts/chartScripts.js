@@ -39,11 +39,25 @@ function getChartData(columnNames, allText, newData, locationName) {
                 tempData.set(headers[j],data[j]);
             }
 
-            if(tempData.get("State") === locationName) {
+            if(tempData.get("CITY_NAME") === locationName) {
                 for(var k=0; k<columnNames.length; k++) {
                     newData.push(parseFloat(tempData.get(columnNames[k])))
                 }
             }
         }
     }
+}
+
+function getChartColumns(currentLayer) {
+    var chartColumns = [];
+    var size;
+
+    if(currentLayer === 'Zips') {
+        size = 12; } else {
+        size = 24; }
+
+    for(var i = 0; i < size; i++){
+        chartColumns.push('M ' + (i+1));
+    }
+    return chartColumns;
 }

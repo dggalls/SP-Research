@@ -11,6 +11,8 @@ function generateChart(chartLabels, chartData) {
         height: '250px'
     });
 
+    console.log(chartData);
+
     chart.on('draw', function (data) {
         if (data.type === 'line' || data.type === 'area') {
             data.element.animate({
@@ -26,38 +28,32 @@ function generateChart(chartLabels, chartData) {
     });
 }
 
-function getChartData(columnNames, allText, newData, locationName) {
-    var allTextLines = allText.split(/\r\n|\n/);
-    var headers = allTextLines[0].split(',');
-    var tempData = new Map();
-
-    for (var i=1; i<allTextLines.length; i++) {
-        var data = allTextLines[i].split(',');
-        if (data.length == headers.length) {
-
-            for (var j=0; j<headers.length; j++) {
-                tempData.set(headers[j],data[j]);
-            }
-
-            if(tempData.get("CITY_NAME") === locationName) {
-                for(var k=0; k<columnNames.length; k++) {
-                    newData.push(parseFloat(tempData.get(columnNames[k])))
-                }
-            }
-        }
+function getChartData(allText, name) {
+    if(currentLayer === 'Cities') {
+        var newData = allText[name.toUpperCase()];
+    } else {
+        var newData = allText[name];
     }
+
+    if(currentLayer === 'Cities' || currentLayer === 'Zips') {
+        newData = newData.slice(0, 12);
+    } else {
+        newData = newData.slice(0, 24);
+    }
+
+    return newData
 }
 
 function getChartColumns(currentLayer) {
     var chartColumns = [];
     var size;
 
-    if(currentLayer === 'Zips') {
+    if(currentLayer === 'Zips' || currentLayer === 'Cities') {
         size = 12; } else {
         size = 24; }
 
     for(var i = 0; i < size; i++){
-        chartColumns.push('M ' + (i+1));
+        chartColumns.push('M' + (i+1) + ' ');
     }
     return chartColumns;
 }

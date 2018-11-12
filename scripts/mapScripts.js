@@ -1,14 +1,18 @@
-function assignVectorColours(dataArray, expressionArray) {
+function assignVectorColours(dataArray, expressionArray, caps = false) {
     var maxValue;
 
-    maxValue = 4000000;
+    maxValue = 10000000;
 
     for (var key in dataArray) {
         if (dataArray.hasOwnProperty(key)) {
 
             var red = (dataArray[key] / maxValue) * 255;
             var color = "rgba(" + red + ", " + 0 + ", " + 0 + ", 1)";
-            expressionArray.push(key, color);
+            if(caps) {
+                expressionArray.push(capitalise(key), color);
+            } else {
+                expressionArray.push(key, color);
+            }
         }
     }
 
@@ -61,9 +65,15 @@ function generatePopup(chartColumns, feature, featureHeader, clickPos) {
 
     var tableHTML;
 
-    getChartData(chartColumns, zipData, tempData2, feature.properties.NAME);
+    if(currentLayer === 'Zips') {
+        tempData2 = getChartData(initialData, parseInt(feature.properties.POSTCODE));
+    } else if(currentLayer === 'Counties') {
+        tempData2 = getChartData(initialData2, parseInt(feature.properties.ADMINCODE));
+    } else if(currentLayer === 'Cities') {
+        tempData2 = getChartData(initialData3, feature.properties.city);
+    }
 
-    if(currentLayer === 'States' || currentLayer === 'Counties') {
+    if(currentLayer === 'Zips' || currentLayer === 'Counties' || currentLayer === 'Cities') {
 
         tableHTML = '<img src="img/Mastercard.png" style="width=140px; height:50px; margin:auto;"><br>' +
             '<table>' +
@@ -71,8 +81,6 @@ function generatePopup(chartColumns, feature, featureHeader, clickPos) {
             '<th><h3>Value</h3></th></tr>' +
             '<tr><td><h3>' + featureHeader + '</h3></td>' +
             '<td><h3>$' + tempData2[datasetPosition - 1] + '</h3></td></tr></table>';
-
-        console.log(tempData2[0]);
 
     } else {
 
@@ -87,15 +95,24 @@ function generatePopup(chartColumns, feature, featureHeader, clickPos) {
 
         .setHTML(tableHTML).addTo(map);
 
-    generateChart(chartColumns, tempData2)
+    if(currentLayer === 'Zips' || currentLayer === 'Counties' || currentLayer === 'Cities') {
+        generateChart(chartColumns, tempData2)
+    }
 }
 
 function switchLayer(input) {
 
-    initialData = getDataForMonth(input.target.id, zipData);
-    // initialData = getCSVFloatColumnData(input.target.id, stateCsvData, 'State');
-    // assignVectorColours(initialData, expression, "STATE", 'States');
-    // map.setPaintProperty('States', 'fill-color', expression);
+    zipMonthData = getDataForMonth(input.target.id, zipData);
+    FIPSMonthData = getDataForMonth(input.target.id, FIPSData);
+
+    expression = ["match", ["get", "POSTCODE"]];
+    expression2 = ["match", ["get", "ADMINCODE"]];
+
+    assignVectorColours(zipMonthData, expression);
+    assignVectorColours(FIPSMonthData, expression2);
+
+    map.setPaintProperty('Zips', 'fill-color', expression);
+    map.setPaintProperty('Counties', 'fill-color', expression2);
 
 
     datasetPosition = input.target.value;
@@ -139,12 +156,13 @@ function addLegend(dataset) {
 function findLocationNamesBetweenValues(dataArray, startValue, endValue) {
     var filteredData = [];
 
-
-    dataArray.forEach(function(row) {
-        if(row['Amount'] >= startValue && row['Amount'] <= endValue) {
-            filteredData.push(row['STATE']);
+    for (var key in dataArray) {
+        if (dataArray.hasOwnProperty(key)) {
+            if (dataArray[key] >= startValue && dataArray[key] <= endValue) {
+                filteredData.push(key);
+            }
         }
-    });
+    }
 
     return filteredData;
 }
@@ -154,8 +172,8 @@ function addFilterUI(){
         $( "#slider-range" ).slider({
             range: true,
             min: 0,
-            max: 100000,
-            values: [ 0, 100000 ],
+            max: 10000000,
+            values: [ 0, 10000000 ],
             step: 1000,
             animate: "slow",
             orientation: "vertical",
@@ -169,10 +187,8 @@ function addFilterUI(){
 }
 
 function applyFilter() {
-    var stateFilters = findLocationNamesBetweenValues(initialData, $("#slider-range").slider("values", 0), $("#slider-range").slider("values", 1));
-    var countyFilters = getStateNumbers(stateFilters);
-    map.setFilter('States', ['match', ['get', 'STATE_CODE'], stateFilters, true, false]);
-    map.setFilter('Counties', ['match', ['get', 'STATE'], countyFilters, true, false]);
+    var FIPSFilters = findLocationNamesBetweenValues(FIPSMonthData, $("#slider-range").slider("values", 0), $("#slider-range").slider("values", 1));
+    map.setFilter('Counties', ['match', ['get', 'ADMINCODE'], FIPSFilters, true, false]);
 }
 
 function getLegendGrouping() {
@@ -187,3 +203,17 @@ function getLegendGrouping() {
         Zips: []
     };
 };
+
+console.log(capitalise('johnny bingo sings'));
+
+function capitalise(str)
+{
+    str = str.toLowerCase();
+    str = str.split(" ");
+
+    for (var i = 0, x = str.length; i < x; i++) {
+        str[i] = str[i][0].toUpperCase() + str[i].substr(1);
+    }
+
+    return str.join(" ");
+}

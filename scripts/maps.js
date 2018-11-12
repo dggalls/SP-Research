@@ -58,7 +58,6 @@ function getStateNumbers(stateCodes) {
     stateCodes.forEach(function(code) {
         stateNumbers.push(stateMap[code]);
     });
-    console.log(stateNumbers);
     return stateNumbers;
 
 };

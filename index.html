@@ -15,7 +15,6 @@
     <script src="./scripts/mapScripts.js"></script>
     <script src="./scripts/layers.js"></script>
     <script src="./scripts/chartScripts.js"></script>
-    <script src="./scripts/generalScripts.js"></script>
     <script src="./scripts/maps.js"></script>
 
 
@@ -36,7 +35,7 @@
     <div class="ct-chart ct-square" id="chart-2a"></div>
 </div>
 
-<div class='map-overlay' id='data-switch'>
+<div class='map-overlay' id='data-switch' style="overflow: scroll;">
     <div id="menu">
         <input type="radio" name="yearValue" value="1" id="1" checked>
         <label for='1'>Month 1 Total Spending</label>
@@ -110,12 +109,13 @@
 
     var expression = ["match", ["get", "POSTCODE"]];
     var expression2 = ["match", ["get", "ADMINCODE"]];
+    var expression3 = ["match", ["get", "city"]];
     var initialData = [];
     var initialData2 = [];
+    var initialData3 = [];
     var zipMonthData = [];
+    var cityMonthData = [];
     var FIPSMonthData = [];
-    var zipData = [];
-    var FIPSData = [];
 
     var currentLayer = 'Outline';
 
@@ -128,7 +128,6 @@
                 initialData = getCSVMonthlyData('scaled_amt', data, "Zip");
                 zipMonthData = getDataForMonth(1, initialData);
                 assignVectorColours(zipMonthData, expression);
-                zipData = initialData;
             }
         });
     });
@@ -142,7 +141,20 @@
                 initialData2 = getCSVMonthlyData('scaled_amt', data, "FIPS");
                 FIPSMonthData = getDataForMonth(1, initialData2);
                 assignVectorColours(FIPSMonthData, expression2);
-                FIPSData = initialData;
+            }
+        });
+    });
+
+    $(document).ready(function() {
+        $.ajax({
+            type: "GET",
+            url: "./Pbcsv/Mnthly_City_Scaled_Amt_RESTAURANTS.csv",
+            dataType: "text",
+            success: function(data) {
+                initialData3 = getCSVMonthlyData('scaled_amt', data, "CITY_NAME");
+                cityMonthData = getDataForMonth(1, initialData3);
+                assignVectorColours(cityMonthData, expression3, true);
+                console.log(expression3);
                 loadLayer();
             }
         });
@@ -174,7 +186,11 @@
 
         console.log(feature);
 
-        if(currentLayer === 'Counties' || currentLayer === 'Zips') {
+        if (currentLayer === "Outline") {
+            generatePopup(chartColumns, feature, feature.properties.name, e);
+        } else if(currentLayer === 'Cities') {
+            generatePopup(chartColumns, feature, feature.properties.city, e);
+        } else {
             generatePopup(chartColumns, feature, feature.properties.NAME, e);
         }
     });

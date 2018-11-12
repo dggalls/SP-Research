@@ -101,7 +101,7 @@ function loadLayer() {
                 'visibility': 'none'
             },
             "paint": {
-                "fill-color": 'rgb(255,146,0)',
+                "fill-color": expression3,
                 'fill-opacity': 0.6,
                 "fill-outline-color": '#FFFFFF'
             }

@@ -1,4 +1,5 @@
 function generateChart(chartLabels, chartData) {
+    chartData = chartData.slice(0,12);
     var chart = new Chartist.Line('.ct-chart', {
         labels: chartLabels,
         series: [chartData]
@@ -50,7 +51,7 @@ function getChartColumns(currentLayer) {
 
     if(currentLayer === 'Zips' || currentLayer === 'Cities') {
         size = 12; } else {
-        size = 24; }
+        size = 12; }
 
     for(var i = 0; i < size; i++){
         chartColumns.push('M' + (i+1) + ' ');

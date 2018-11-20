@@ -34,10 +34,9 @@ function getCSVFloatColumnData(columnValueName, allText, columnName) {
                 tempData.set(headers[j],data[j]);
             }
 
-            newData.push({"Place": tempData.get('SP_CITY_NAME_CLEAN')})
+            newData.push({"Place": tempData.get('City')})
         }
     }
-    console.log(tempData);
 
     return newData;
 }

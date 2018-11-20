@@ -17,7 +17,7 @@ function loadLayer() {
                 'visibility': 'none'
             },
             "paint": {
-                "fill-color": expression2,
+                "fill-color": 'red',
                 "fill-outline-color": '#FFFFFF',
                 'fill-opacity': 0.6
             }
@@ -38,7 +38,7 @@ function loadLayer() {
                 'visibility': 'none'
             },
             "paint": {
-                "fill-color": expression,
+                "fill-color": 'red',
                 'fill-opacity': 0.6,
                 "fill-outline-color": '#FFFFFF',
             }
@@ -157,7 +157,7 @@ function loadLayer() {
         var chartName = document.getElementById("chart-name");
 
         if(map.getZoom() < 3.5) {
-            hideAllBut('Outline')
+            hideAllBut('Cities')
         } else if (map.getZoom() < 6 && map.getZoom() >=3.5){
             hideAllBut('States');
         } else if(map.getZoom() >= 6 && map.getZoom() <7) {
